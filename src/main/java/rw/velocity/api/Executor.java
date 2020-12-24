@@ -10,6 +10,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
+/**
+ * Creates the http request objects and executes the actual request.
+ * Uses {@link HttpRequest}
+ */
 class Executor {
 
     private final RequestBuilderImpl builder;
@@ -20,12 +24,8 @@ class Executor {
     }
 
     public Response execute() throws IOException, InterruptedException {
-        createConnection();
 
-        return response;
-    }
-
-    private void createConnection() throws IOException, InterruptedException {
+        // Setup request builder
         String fullUrl = builder.requestUrl + createQueryString();
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(URI.create(fullUrl));
 
@@ -35,20 +35,32 @@ class Executor {
         // Setup body
         setupBody(requestBuilder);
 
-        // Make request
+        // Create request
         HttpClient client = HttpClient.newHttpClient();
-        var r = client.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+        HttpRequest request = requestBuilder.build();
 
+        // Debug prints
+        debugPrintRequest(request);
+
+        // Make request
+        var r = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        //Debug prints
+        debugPrintResponse(r);
+
+        // Setup response
         response.body = r.body();
         response.isSuccess = r.statusCode() / 100 == 2;
         response.statusCode = r.statusCode();
         response.headers = r.headers();
+
+        return response;
     }
 
     private void setupHeaders(HttpRequest.Builder requestBuilder) {
         builder.headers.forEach(requestBuilder::setHeader);
 
-        String contentTypeToSet = null;
+        String contentTypeToSet;
 
         if (builder.contentType != null) {
             contentTypeToSet = builder.contentType;
@@ -58,9 +70,9 @@ class Executor {
 
         if(contentTypeToSet != null){
             String boundary =
-                    (contentTypeToSet.equalsIgnoreCase(ContentType.MULTIPART_FORM.type)) ?
-                            "; boundary=" + MultiPartPublisher.MULTIPART_BOUNDARY :
-                            "";
+                    (contentTypeToSet.equalsIgnoreCase(ContentType.MULTIPART_FORM.type))
+                            ? "; boundary=" + MultiPartPublisher.MULTIPART_BOUNDARY
+                            : "";
 
             requestBuilder.setHeader("Content-Type", contentTypeToSet + boundary);
         }
@@ -70,6 +82,42 @@ class Executor {
         }
 
         requestBuilder.setHeader("User-Agent", "github.com/ravindu1024/velocity-jvm");
+    }
+
+    private void debugPrintRequest(HttpRequest request){
+        if(Velocity.ENABLE_LOGGING){
+            // Url
+            System.out.println("--> " + request.uri().toString());
+            // Headers
+            request.headers().map().forEach((s, values) -> {
+                System.out.print("> " + s + ": ");
+                if(!values.isEmpty()){
+                    System.out.println(values.get(0));
+                }
+            });
+            System.out.println();
+
+            // Body
+            if(builder.postBody != null)
+                System.out.println(builder.postBody);
+        }
+    }
+
+    private <T> void debugPrintResponse(HttpResponse<T> response){
+        if(Velocity.ENABLE_LOGGING){
+            // Headers
+            response.headers().map().forEach((s, values) -> {
+                System.out.print("> " + s + ": ");
+                if(!values.isEmpty()){
+                    System.out.println(values.get(0));
+                }
+            });
+
+            // Body
+            System.out.println(response.body());
+            // Url
+            System.out.println("<-- " + response.statusCode()  + " " + response.uri().toString());
+        }
     }
 
     private void setupBody(HttpRequest.Builder requestBuilder) throws IOException {

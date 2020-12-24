@@ -22,7 +22,6 @@ public class MultiPartPublisher {
 
     static final String MULTIPART_BOUNDARY = "X-VELOCITY_JVM-BOUNDARY";
 
-
     public static HttpRequest.BodyPublisher ofMimeMultipartData(Map<Object, Object> data) throws IOException {
         // Result request body
         List<byte[]> byteArrays = new ArrayList<>();

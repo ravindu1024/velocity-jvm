@@ -6,6 +6,9 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Builds an http request with parameters
+ */
 public interface RequestBuilder {
     Authentication authentication();
 

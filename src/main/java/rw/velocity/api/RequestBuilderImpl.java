@@ -11,11 +11,18 @@ import java.util.List;
 import java.util.Map;
 
 class RequestBuilderImpl implements RequestBuilder {
+
+    //region Constructor initialized params
+
     protected final String requestUrl;
     protected HashMap<String, String> headers = new HashMap<>();
     protected ArrayList<Pair<String, String>> queryParams = new ArrayList<>();
     protected ArrayList<Pair<String, String>> postParams = new ArrayList<>();
     protected final String method;
+
+    //endregion
+
+    //region Builder params
 
     @Nullable
     protected String contentType = null;
@@ -31,6 +38,8 @@ class RequestBuilderImpl implements RequestBuilder {
     protected File postBodyFile;
     @Nullable
     protected String postFileParamName;
+
+    //endregion
 
     private RequestBuilderImpl(){
         this.requestUrl = "";

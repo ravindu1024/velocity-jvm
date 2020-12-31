@@ -1,5 +1,7 @@
 package rw.velocity.api;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -18,6 +20,7 @@ class Executor {
 
     private final RequestBuilderImpl builder;
     private final Response response = new Response();
+    private @Nullable String contentType;
 
     public Executor(RequestBuilderImpl builder) {
         this.builder = builder;
@@ -60,21 +63,19 @@ class Executor {
     private void setupHeaders(HttpRequest.Builder requestBuilder) {
         builder.headers.forEach(requestBuilder::setHeader);
 
-        String contentTypeToSet;
-
         if (builder.contentType != null) {
-            contentTypeToSet = builder.contentType;
+            contentType = builder.contentType;
         }else{
-            contentTypeToSet = builder.contentTypeAuto;
+            contentType = builder.contentTypeAuto;
         }
 
-        if(contentTypeToSet != null){
+        if(contentType != null){
             String boundary =
-                    (contentTypeToSet.equalsIgnoreCase(ContentType.MULTIPART_FORM.type))
+                    (contentType.equalsIgnoreCase(ContentType.MULTIPART_FORM.type))
                             ? "; boundary=" + MultiPartPublisher.MULTIPART_BOUNDARY
                             : "";
 
-            requestBuilder.setHeader("Content-Type", contentTypeToSet + boundary);
+            requestBuilder.setHeader("Content-Type", contentType + boundary);
         }
 
         if (builder.authHeader != null) {
@@ -128,24 +129,31 @@ class Executor {
             requestBuilder.DELETE();
         } else {
 
-            HashMap<Object, Object> params = new HashMap<>();
-            builder.postParams.forEach(p -> {
-                params.put(p.first, p.second);
-            });
+            if(contentType != null && contentType.startsWith("multipart")){
+                HashMap<Object, Object> params = new HashMap<>();
+                builder.postParams.forEach(p -> {
+                    params.put(p.first, p.second);
+                });
 
-            if (builder.postBodyFile != null) {
-                params.put(builder.postFileParamName, Paths.get(builder.postBodyFile.getAbsolutePath()));
-                requestBuilder.method(
-                        builder.method,
-                        MultiPartPublisher.ofMimeMultipartData(params)
-                );
-            } else if (builder.postBodyStream != null) {
-                params.put(builder.postFileParamName, builder.postBodyStream);
-                requestBuilder.method(
-                        builder.method,
-                        MultiPartPublisher.ofMimeMultipartData(params)
-                );
-            } else {
+                if (builder.postBodyFile != null) {
+                    params.put(builder.postFileParamName, Paths.get(builder.postBodyFile.getAbsolutePath()));
+                    requestBuilder.method(
+                            builder.method,
+                            MultiPartPublisher.ofMimeMultipartData(params)
+                    );
+                } else if (builder.postBodyStream != null) {
+                    params.put(builder.postFileParamName, builder.postBodyStream);
+                    requestBuilder.method(
+                            builder.method,
+                            MultiPartPublisher.ofMimeMultipartData(params)
+                    );
+                }else{
+                    requestBuilder.method(
+                            builder.method,
+                            MultiPartPublisher.ofMimeMultipartData(params)
+                    );
+                }
+            }else {
                 requestBuilder.method(
                         builder.method,
                         HttpRequest.BodyPublishers.ofString(createBodyString())

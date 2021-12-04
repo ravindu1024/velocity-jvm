@@ -101,6 +101,14 @@ class Executor {
             // Body
             if(builder.postBody != null)
                 System.out.println(builder.postBody);
+
+            // Form Params
+            if(builder.multiPartData != null){
+                builder.multiPartData.forEach(b -> {
+                    System.out.println(new String(b));
+                });
+                System.out.println();
+            }
         }
     }
 
@@ -108,7 +116,7 @@ class Executor {
         if(Velocity.ENABLE_LOGGING){
             // Headers
             response.headers().map().forEach((s, values) -> {
-                System.out.print("> " + s + ": ");
+                System.out.print("< " + s + ": ");
                 if(!values.isEmpty()){
                     System.out.println(values.get(0));
                 }
@@ -139,18 +147,18 @@ class Executor {
                     params.put(builder.postFileParamName, Paths.get(builder.postBodyFile.getAbsolutePath()));
                     requestBuilder.method(
                             builder.method,
-                            MultiPartPublisher.ofMimeMultipartData(params)
+                            MultiPartPublisher.ofMimeMultipartData(params, null)
                     );
                 } else if (builder.postBodyStream != null) {
                     params.put(builder.postFileParamName, builder.postBodyStream);
                     requestBuilder.method(
                             builder.method,
-                            MultiPartPublisher.ofMimeMultipartData(params)
+                            MultiPartPublisher.ofMimeMultipartData(params, null)
                     );
                 }else{
                     requestBuilder.method(
                             builder.method,
-                            MultiPartPublisher.ofMimeMultipartData(params)
+                            MultiPartPublisher.ofMimeMultipartData(params, builder)
                     );
                 }
             }else {

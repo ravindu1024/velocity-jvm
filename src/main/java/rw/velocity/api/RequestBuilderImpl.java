@@ -41,6 +41,10 @@ class RequestBuilderImpl implements RequestBuilder {
 
     //endregion
 
+    //region Debug
+    List<byte[]> multiPartData;
+    //endregion
+
     private RequestBuilderImpl(){
         this.requestUrl = "";
         this.method = "";

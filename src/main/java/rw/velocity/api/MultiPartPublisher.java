@@ -1,5 +1,7 @@
 package rw.velocity.api;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.http.HttpRequest;
@@ -22,7 +24,7 @@ public class MultiPartPublisher {
 
     static final String MULTIPART_BOUNDARY = "X-VELOCITY_JVM-BOUNDARY";
 
-    public static HttpRequest.BodyPublisher ofMimeMultipartData(Map<Object, Object> data) throws IOException {
+    public static HttpRequest.BodyPublisher ofMimeMultipartData(Map<Object, Object> data, @Nullable RequestBuilderImpl builder) throws IOException {
         // Result request body
         List<byte[]> byteArrays = new ArrayList<>();
 
@@ -58,6 +60,9 @@ public class MultiPartPublisher {
 
         // Closing boundary
         byteArrays.add(("--" + MULTIPART_BOUNDARY + "--").getBytes(StandardCharsets.UTF_8));
+
+        if(builder != null)
+            builder.multiPartData = byteArrays;
 
         // Serializing as byte array
         return HttpRequest.BodyPublishers.ofByteArrays(byteArrays);

@@ -10,7 +10,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+
 
 /**
  * Creates the http request objects and executes the actual request.
@@ -31,6 +34,11 @@ class Executor {
         // Setup request builder
         String fullUrl = builder.requestUrl + createQueryString();
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(URI.create(fullUrl));
+
+
+        if(Velocity.TIMEOUT_SECONDS > 0){
+            requestBuilder.timeout(Duration.of(Velocity.TIMEOUT_SECONDS, ChronoUnit.SECONDS));
+        }
 
         // Setup headers
         setupHeaders(requestBuilder);

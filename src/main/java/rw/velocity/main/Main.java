@@ -7,6 +7,9 @@ import java.io.FileNotFoundException;
 public class Main {
     public static void main(String[] args) {
 
+        Velocity.enableLogging(true);
+        Velocity.setTimeout(30);
+
         try {
             //GET
             var r = Velocity.get("https://jsonplaceholder.typicode.com/posts/1")

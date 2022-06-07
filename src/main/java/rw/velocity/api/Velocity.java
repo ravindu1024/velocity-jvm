@@ -7,6 +7,7 @@ package rw.velocity.api;
 public class Velocity {
 
     static boolean ENABLE_LOGGING = false;
+    static int TIMEOUT_SECONDS = 0;
 
     public static RequestBuilder get(String url){
         return new RequestBuilderImpl(url, "GET");
@@ -24,7 +25,18 @@ public class Velocity {
         return new RequestBuilderImpl(url, "PUT");
     }
 
+
+    /**
+     * Enable or disable request logging
+     * @param enable set true to enable logging
+     */
     public static void enableLogging(boolean enable){
         ENABLE_LOGGING = enable;
     }
+
+    /**
+     * Set a connection timeout
+     * @param timeout timeout in seconds
+     */
+    public static void setTimeout(int timeout) { TIMEOUT_SECONDS = timeout; }
 }

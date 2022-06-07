@@ -35,8 +35,9 @@ class Executor {
         String fullUrl = builder.requestUrl + createQueryString();
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(URI.create(fullUrl));
 
-
-        if(Velocity.TIMEOUT_SECONDS > 0){
+        if(builder.timeout > 0){
+            requestBuilder.timeout(Duration.of(builder.timeout, ChronoUnit.SECONDS));
+        } else if(Velocity.TIMEOUT_SECONDS > 0){
             requestBuilder.timeout(Duration.of(Velocity.TIMEOUT_SECONDS, ChronoUnit.SECONDS));
         }
 

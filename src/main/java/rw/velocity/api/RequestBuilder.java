@@ -98,6 +98,14 @@ public interface RequestBuilder {
     RequestBuilder body(String paramName, File body);
 
     /**
+     * Set a request timeout in seconds
+     * Set 0 for infinite
+     * @param seconds timeout seconds
+     * @return RequestBuilder
+     */
+    RequestBuilder timeout(int seconds);
+
+    /**
      * Make an http request synchronously. This function will block until the request is complete and response data
      * is available. Uses the new Java 11 {@link java.net.http.HttpRequest} class under the hood.
      * @return Response data

@@ -39,13 +39,15 @@ class RequestBuilderImpl implements RequestBuilder {
     @Nullable
     protected String postFileParamName;
 
+    protected int timeout = 0;
+
     //endregion
 
     //region Debug
     List<byte[]> multiPartData;
     //endregion
 
-    private RequestBuilderImpl(){
+    private RequestBuilderImpl() {
         this.requestUrl = "";
         this.method = "";
     }
@@ -58,7 +60,7 @@ class RequestBuilderImpl implements RequestBuilder {
     //region Authentication
 
     @Override
-    public Authentication authentication(){
+    public Authentication authentication() {
         return new Authentication(this);
     }
 
@@ -67,25 +69,25 @@ class RequestBuilderImpl implements RequestBuilder {
     //region Headers
 
     @Override
-    public RequestBuilder header(String header, String value){
+    public RequestBuilder header(String header, String value) {
         this.headers.put(header, value);
         return this;
     }
 
     @Override
-    public RequestBuilder headers(Map<String, String> headers){
+    public RequestBuilder headers(Map<String, String> headers) {
         this.headers.putAll(headers);
         return this;
     }
 
     @Override
-    public RequestBuilder contentType(ContentType contentType){
+    public RequestBuilder contentType(ContentType contentType) {
         this.contentType = contentType.type;
         return this;
     }
 
     @Override
-    public RequestBuilder contentType(String contentType){
+    public RequestBuilder contentType(String contentType) {
         this.contentType = contentType;
         return this;
     }
@@ -95,13 +97,13 @@ class RequestBuilderImpl implements RequestBuilder {
     //region Query Params
 
     @Override
-    public RequestBuilder queryParam(String name, String value){
+    public RequestBuilder queryParam(String name, String value) {
         this.queryParams.add(new Pair<>(name, value));
         return this;
     }
 
     @Override
-    public RequestBuilder queryParams(List<Pair<String, String>> params){
+    public RequestBuilder queryParams(List<Pair<String, String>> params) {
         this.queryParams.addAll(params);
         return this;
     }
@@ -111,28 +113,28 @@ class RequestBuilderImpl implements RequestBuilder {
     //region Form/Body Params
 
     @Override
-    public RequestBuilder formParam(String name, String value){
+    public RequestBuilder formParam(String name, String value) {
         this.contentTypeAuto = ContentType.URL_ENCODED.type;
         this.postParams.add(new Pair<>(name, value));
         return this;
     }
 
     @Override
-    public RequestBuilder formParams(List<Pair<String, String>> params){
+    public RequestBuilder formParams(List<Pair<String, String>> params) {
         this.contentTypeAuto = ContentType.URL_ENCODED.type;
         this.postParams.addAll(params);
         return this;
     }
 
     @Override
-    public RequestBuilder body(String body){
+    public RequestBuilder body(String body) {
         this.postBody = body;
         this.contentTypeAuto = ContentType.APPLICATION_JSON.type;
         return this;
     }
 
     @Override
-    public RequestBuilder body(String paramName, InputStream body){
+    public RequestBuilder body(String paramName, InputStream body) {
         this.postBodyStream = body;
         this.postBodyFile = null;
         this.postFileParamName = paramName;
@@ -141,11 +143,17 @@ class RequestBuilderImpl implements RequestBuilder {
     }
 
     @Override
-    public RequestBuilder body(String paramName, File body){
+    public RequestBuilder body(String paramName, File body) {
         this.postBodyFile = body;
         this.postBodyStream = null;
         this.postFileParamName = paramName;
         this.contentTypeAuto = ContentType.MULTIPART_FORM.type;
+        return this;
+    }
+
+    @Override
+    public RequestBuilder timeout(int seconds) {
+        this.timeout = seconds;
         return this;
     }
 

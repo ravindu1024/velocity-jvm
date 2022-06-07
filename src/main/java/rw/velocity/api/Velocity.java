@@ -38,5 +38,5 @@ public class Velocity {
      * Set a connection timeout
      * @param timeout timeout in seconds
      */
-    public static void setTimeout(int timeout) { TIMEOUT_SECONDS = timeout; }
+    public static void setGlobalTimeout(int timeout) { TIMEOUT_SECONDS = timeout; }
 }

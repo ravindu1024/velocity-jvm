@@ -3,8 +3,7 @@ package rw.velocity.api;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URLEncoder;
+import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -48,7 +47,16 @@ class Executor {
         setupBody(requestBuilder);
 
         // Create request
-        HttpClient client = HttpClient.newHttpClient();
+        var clientBuilder = HttpClient.newBuilder();
+
+        // Check for proxy server config
+        if(builder.proxyHost != null && builder.proxyPort != null) {
+            clientBuilder = clientBuilder.proxy(ProxySelector.of(new InetSocketAddress(builder.proxyHost, builder.proxyPort)));
+        }
+
+
+        var client = clientBuilder.build();
+
         HttpRequest request = requestBuilder.build();
 
         // Debug prints

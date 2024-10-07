@@ -38,6 +38,10 @@ class RequestBuilderImpl implements RequestBuilder {
     protected File postBodyFile;
     @Nullable
     protected String postFileParamName;
+    @Nullable
+    protected String proxyHost;
+    @Nullable
+    protected Integer proxyPort;
 
     protected int timeout = 0;
 
@@ -158,6 +162,15 @@ class RequestBuilderImpl implements RequestBuilder {
     }
 
     //endregion
+
+
+    @Override
+    public RequestBuilder proxy(String hostname, int port) {
+        this.proxyHost = hostname;
+        this.proxyPort = port;
+
+        return this;
+    }
 
     @Override
     public Response request() throws IOException, InterruptedException {

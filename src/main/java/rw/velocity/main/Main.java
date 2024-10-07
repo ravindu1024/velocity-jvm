@@ -11,9 +11,6 @@ public class Main {
         Velocity.setGlobalTimeout(30);
 
         try {
-            Velocity.get("http://localhost:8080/diagnostics/test")
-            .timeout(2)
-                    .request();
 
             //GET
             var r = Velocity.get("https://jsonplaceholder.typicode.com/posts/1")

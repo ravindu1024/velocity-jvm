@@ -106,6 +106,14 @@ public interface RequestBuilder {
     RequestBuilder timeout(int seconds);
 
     /**
+     * Set up a proxy server passhrough for a request
+     * @param hostname proxy host
+     * @param port proxy port
+     * @return RequestBuilder
+     */
+    RequestBuilder proxy(String hostname, int port);
+
+    /**
      * Make an http request synchronously. This function will block until the request is complete and response data
      * is available. Uses the new Java 11 {@link java.net.http.HttpRequest} class under the hood.
      * @return Response data

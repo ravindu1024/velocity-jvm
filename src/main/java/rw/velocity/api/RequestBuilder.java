@@ -13,6 +13,11 @@ import java.util.Map;
 public interface RequestBuilder {
 
     /**
+     * Set authentication Basic or Bearer
+     */
+    Authentication authentication();
+
+    /**
      * Set a single header string
      *
      * @param header header name

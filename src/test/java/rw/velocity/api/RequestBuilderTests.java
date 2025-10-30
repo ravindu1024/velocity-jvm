@@ -4,6 +4,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 public class RequestBuilderTests {
 
@@ -80,6 +84,60 @@ public class RequestBuilderTests {
             Assertions.assertEquals(data[1].data, "xyz");
         } catch (Throwable th) {
             Assertions.assertTrue(false);
+        }
+    }
+
+    @Test
+    void getWithBasicAuth() throws IOException, InterruptedException {
+        var builder = new VelocityImpl.BuilderImpl();
+        var testVelocity = new TestableVelocity(builder, 200, "");
+
+        var data = testVelocity
+                .get("http://localhost")
+                .authentication().basic("username", "password")
+                .request();
+
+        Assertions.assertEquals(testVelocity.request().headers().firstValue("Authorization").get(), "Basic dXNlcm5hbWU6cGFzc3dvcmQ=");
+    }
+
+    @Test
+    void getWithBearerAuth() throws IOException, InterruptedException {
+        var builder = new VelocityImpl.BuilderImpl();
+        var testVelocity = new TestableVelocity(builder, 200, "");
+
+        var data = testVelocity
+                .get("http://localhost")
+                .authentication().bearer("bearer_token")
+                .request();
+
+        Assertions.assertEquals(testVelocity.request().headers().firstValue("Authorization").get(), "Bearer bearer_token");
+    }
+
+    @Test
+    void multiPartFormData() throws IOException, InterruptedException {
+
+        var formData = new HashMap<Object, Object>();
+        formData.put("param1", "value1");
+        formData.put("param2", "value2");
+        var bytes = new ArrayList<byte[]>();
+        MultiPartPublisher.ofMimeMultipartData(formData, bytes);
+
+        var strings = bytes.stream().map(String::new).collect(Collectors.toList());
+
+        if(strings.isEmpty()){
+            Assertions.assertTrue(false);
+        }else{
+            var strBuilder = new StringBuilder();
+            strings.forEach(s -> strBuilder.append(s));
+            Assertions.assertEquals(strBuilder.toString(), "--X-VELOCITY_JVM-BOUNDARY\r\n" +
+                    "Content-Disposition: form-data; name=\"param1\"\r\n" +
+                    "\r\n" +
+                    "value1\r\n" +
+                    "--X-VELOCITY_JVM-BOUNDARY\r\n" +
+                    "Content-Disposition: form-data; name=\"param2\"\r\n" +
+                    "\r\n" +
+                    "value2\r\n" +
+                    "--X-VELOCITY_JVM-BOUNDARY--");
         }
     }
 

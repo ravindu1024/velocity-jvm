@@ -50,8 +50,12 @@ class RequestBuilderImpl implements RequestBuilder {
         this.callback = callback;
     }
 
-    //region Headers
+    @Override
+    public Authentication authentication() {
+        return new Authentication(this);
+    }
 
+    //region Headers
 
     @Override
     public RequestBuilder header(String header, String value) {

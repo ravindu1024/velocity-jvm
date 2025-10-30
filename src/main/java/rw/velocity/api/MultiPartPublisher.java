@@ -14,57 +14,70 @@ import java.util.Map;
 
 /**
  * Custom BodyPublisher for multi-part since there is no native support for this.
- *
- * Reference: https://stackoverflow.com/questions/56481475/how-to-define-multiple-parameters-for-a-post-request-using-java-11-http-client
- * Answer by: https://stackoverflow.com/users/3523579/mikhail-kholodkov
- *
+ * <p>
+ * Reference: <a href="https://stackoverflow.com/questions/56481475/how-to-define-multiple-parameters-for-a-post-request-using-java-11-http-client">...</a>
+ * Answer by: <a href="https://stackoverflow.com/users/3523579/mikhail-kholodkov">...</a>
+ * <p>
  * Added InputStream handling to original logic.
  */
-public class MultiPartPublisher {
+class MultiPartPublisher {
 
-    static final String MULTIPART_BOUNDARY = "X-VELOCITY_JVM-BOUNDARY";
+    public static HttpRequest.BodyPublisher ofMimeMultipartData(
+            Map<Object, Object> data,
+            @Nullable ArrayList<byte[]> multipartData
+    ) throws IOException {
 
-    public static HttpRequest.BodyPublisher ofMimeMultipartData(Map<Object, Object> data, @Nullable RequestBuilderImpl builder) throws IOException {
         // Result request body
-        List<byte[]> byteArrays = new ArrayList<>();
+        List<byte[]> formDataBytes = new ArrayList<>();
 
-        // Separator with boundary
-        byte[] separator = ("--" + MULTIPART_BOUNDARY + "\r\nContent-Disposition: form-data; name=").getBytes(StandardCharsets.UTF_8);
+        // Param separator
+        byte[] separator = toBytes("--" + Constants.MULTIPART_BOUNDARY + "\r\nContent-Disposition: form-data; name=");
 
-        // Iterating over data parts
+
         for (Map.Entry<Object, Object> entry : data.entrySet()) {
-
             // Opening boundary
-            byteArrays.add(separator);
+            formDataBytes.add(separator);
 
-            // If value is type of Path (file) append content type with file name and file binaries, otherwise simply append key=value
-            if (entry.getValue() instanceof Path) {
-                var path = (Path) entry.getValue();
+            var key = entry.getKey();
+            var value = entry.getValue();
+
+            if (value instanceof Path) {
+                var path = (Path) value;
                 String mimeType = Files.probeContentType(path);
-                byteArrays.add(("\"" + entry.getKey() + "\"; filename=\"" + path.getFileName()
-                        + "\"\r\nContent-Type: " + mimeType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
-                byteArrays.add(Files.readAllBytes(path));
-                byteArrays.add("\r\n".getBytes(StandardCharsets.UTF_8));
-            }else if (entry.getValue() instanceof InputStream){
-                InputStream stream = (InputStream) entry.getValue();
-                byteArrays.add(("\"" + entry.getKey() + "\"; filename=\"stream"
-                        + "\"\r\nContent-Type: " + "*/*" + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
-                byteArrays.add(stream.readAllBytes());
-                byteArrays.add("\r\n".getBytes(StandardCharsets.UTF_8));
-            }
-            else {
-                byteArrays.add(("\"" + entry.getKey() + "\"\r\n\r\n" + entry.getValue() + "\r\n")
-                        .getBytes(StandardCharsets.UTF_8));
+                String s =
+                        "\"" + key + "\"; " + "filename=\"" + path.getFileName() + "\"\r\n" +
+                                "Content-Type: " + mimeType + "\r\n\r\n";
+
+                formDataBytes.add(toBytes(s));
+                formDataBytes.add(Files.readAllBytes(path));
+                formDataBytes.add(toBytes("\r\n"));
+            } else if (value instanceof InputStream) {
+                var stream = (InputStream) value;
+                String s =
+                        "\"" + key + "\"; filename=\"stream" + "\"\r\n" +
+                                "Content-Type: " + "*/*" + "\r\n\r\n";
+
+                formDataBytes.add(toBytes(s));
+                formDataBytes.add(stream.readAllBytes());
+                formDataBytes.add(toBytes("\r\n"));
+            } else {
+                String s = "\"" + entry.getKey() + "\"\r\n\r\n" + entry.getValue() + "\r\n";
+                formDataBytes.add(toBytes(s));
             }
         }
 
         // Closing boundary
-        byteArrays.add(("--" + MULTIPART_BOUNDARY + "--").getBytes(StandardCharsets.UTF_8));
+        formDataBytes.add(toBytes("--" + Constants.MULTIPART_BOUNDARY + "--"));
 
-        if(builder != null)
-            builder.multiPartData = byteArrays;
+        if (multipartData != null) {
+            multipartData.addAll(formDataBytes);
+        }
 
         // Serializing as byte array
-        return HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
+        return HttpRequest.BodyPublishers.ofByteArrays(formDataBytes);
+    }
+
+    private static byte[] toBytes(String str) {
+        return str.getBytes(StandardCharsets.UTF_8);
     }
 }

@@ -1,42 +1,64 @@
 package rw.velocity.api;
 
+import java.net.http.HttpClient;
+import java.time.Duration;
+import java.util.concurrent.Executor;
+
 /**
  * A lightweight wrapper for {@link java.net.http.HttpRequest} with convenience functions for setting query/form params,
  * headers and body.
  */
-public class Velocity {
+@SuppressWarnings("unused")
+public interface Velocity {
 
-    static boolean ENABLE_LOGGING = false;
-    static int TIMEOUT_SECONDS = 0;
+    interface Builder {
+        Velocity.Builder decodeFactory(JsonDecodeFactory decodeFactory);
 
-    public static RequestBuilder get(String url){
-        return new RequestBuilderImpl(url, "GET");
+        Velocity.Builder proxy(String url, int port);
+
+        Velocity.Builder connectTimeout(Duration timeout);
+
+        Velocity.Builder redirect(RedirectPolicy policy);
+
+        Velocity.Builder version(HttpVersion version);
+
+        Velocity.Builder logger(Logger logger);
+
+        Velocity build();
     }
 
-    public static RequestBuilder post(String url){
-        return new RequestBuilderImpl(url, "POST");
+    RequestBuilder get(String url);
+
+    RequestBuilder post(String url);
+
+    RequestBuilder delete(String url);
+
+    RequestBuilder put(String url);
+
+    static Builder newBuilder() {
+        return new VelocityImpl.BuilderImpl();
     }
 
-    public static RequestBuilder delete(String url){
-        return new RequestBuilderImpl(url, "DELETE");
+    enum RedirectPolicy {
+        NEVER(HttpClient.Redirect.NEVER),
+        HTTPS_ONLY(HttpClient.Redirect.NORMAL),
+        ALWAYS(HttpClient.Redirect.ALWAYS);
+
+        public final HttpClient.Redirect r;
+
+        RedirectPolicy(HttpClient.Redirect r) {
+            this.r = r;
+        }
     }
 
-    public static RequestBuilder put(String url){
-        return new RequestBuilderImpl(url, "PUT");
+    enum HttpVersion {
+        V1(HttpClient.Version.HTTP_1_1),
+        V2_PREFERRED(HttpClient.Version.HTTP_2);
+
+        public final HttpClient.Version v;
+
+        HttpVersion(HttpClient.Version v) {
+            this.v = v;
+        }
     }
-
-
-    /**
-     * Enable or disable request logging
-     * @param enable set true to enable logging
-     */
-    public static void enableLogging(boolean enable){
-        ENABLE_LOGGING = enable;
-    }
-
-    /**
-     * Set a connection timeout
-     * @param timeout timeout in seconds
-     */
-    public static void setGlobalTimeout(int timeout) { TIMEOUT_SECONDS = timeout; }
 }

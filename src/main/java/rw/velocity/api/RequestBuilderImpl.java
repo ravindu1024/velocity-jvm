@@ -15,10 +15,8 @@ class RequestBuilderImpl implements RequestBuilder {
     //region Constructor initialized params
 
     protected final String requestUrl;
-    protected HashMap<String, String> headers = new HashMap<>();
-    protected ArrayList<Pair<String, String>> queryParams = new ArrayList<>();
-    protected ArrayList<Pair<String, String>> postParams = new ArrayList<>();
     protected final String method;
+    private final RequestHandlerCallback callback;
 
     //endregion
 
@@ -38,39 +36,22 @@ class RequestBuilderImpl implements RequestBuilder {
     protected File postBodyFile;
     @Nullable
     protected String postFileParamName;
-    @Nullable
-    protected String proxyHost;
-    @Nullable
-    protected Integer proxyPort;
-
+    protected HashMap<String, String> headers = new HashMap<>();
+    protected ArrayList<Pair<String, String>> queryParams = new ArrayList<>();
+    protected ArrayList<Pair<String, String>> postParams = new ArrayList<>();
     protected int timeout = 0;
 
     //endregion
 
-    //region Debug
-    List<byte[]> multiPartData;
-    //endregion
 
-    private RequestBuilderImpl() {
-        this.requestUrl = "";
-        this.method = "";
-    }
-
-    public RequestBuilderImpl(String url, String method) {
+    protected RequestBuilderImpl(String url, String method, RequestHandlerCallback callback) {
         this.requestUrl = url;
         this.method = method;
+        this.callback = callback;
     }
-
-    //region Authentication
-
-    @Override
-    public Authentication authentication() {
-        return new Authentication(this);
-    }
-
-    //endregion
 
     //region Headers
+
 
     @Override
     public RequestBuilder header(String header, String value) {
@@ -78,11 +59,13 @@ class RequestBuilderImpl implements RequestBuilder {
         return this;
     }
 
+
     @Override
     public RequestBuilder headers(Map<String, String> headers) {
         this.headers.putAll(headers);
         return this;
     }
+
 
     @Override
     public RequestBuilder contentType(ContentType contentType) {
@@ -163,17 +146,13 @@ class RequestBuilderImpl implements RequestBuilder {
 
     //endregion
 
-
     @Override
-    public RequestBuilder proxy(String hostname, int port) {
-        this.proxyHost = hostname;
-        this.proxyPort = port;
-
-        return this;
+    public Response request() throws IOException, InterruptedException {
+        return callback.executeRequest(this);
     }
 
     @Override
-    public Response request() throws IOException, InterruptedException {
-        return new Executor(this).execute();
+    public <T> T request(Class<T> clz) throws HttpException, IOException, InterruptedException {
+        return callback.executeRequest(this, clz);
     }
 }

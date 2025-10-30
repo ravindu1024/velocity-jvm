@@ -1,45 +1,86 @@
 package rw.velocity.main;
 
+import rw.velocity.api.GsonDecoderFactory;
+import rw.velocity.api.HttpException;
 import rw.velocity.api.Velocity;
+import rw.velocity.api.VelocityLogger;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+
 
 public class Main {
+    public static class Post {
+        public int userId;
+        public String title;
+        public String body;
+    }
+
     public static void main(String[] args) {
 
-        Velocity.enableLogging(true);
-        Velocity.setGlobalTimeout(30);
+        Velocity velocity = Velocity.newBuilder()
+                .version(Velocity.HttpVersion.V2_PREFERRED)
+                .logger(new VelocityLogger())
+                .decodeFactory(new GsonDecoderFactory())
+                .build();
+
+        var t = System.currentTimeMillis();
 
         try {
 
             //GET
-            var r = Velocity.get("https://jsonplaceholder.typicode.com/posts/1")
-                    .request();
+            var t1 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Post p = null;
+                    try {
+                        p = velocity
+                                .get("https://jsonplaceholder.typicode.com/posts/1")
+                                .request(Post.class);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    } catch (HttpException e) {
+                        throw new RuntimeException(e);
+                    }
 
-            System.out.println("GET: " + r.getBody());
+                    System.out.println("GET: " + p.title);
+                }
+            });
+            t1.start();
+            t1.join();
+
 
             //POST
-            r = Velocity.post("https://jsonplaceholder.typicode.com/posts")
+            var r = velocity
+                    .post("https://jsonplaceholder.typicode.com/posts")
                     .body("{\"body\":\"hello world\"}")
                     .request();
 
             System.out.println("POST: " + r.getBody());
 
             //PUT
-            r = Velocity.put("https://jsonplaceholder.typicode.com/posts/1")
+            r = velocity
+                    .put("https://jsonplaceholder.typicode.com/posts/1")
                     .body("{\"body\":\"hello world\"}")
                     .request();
 
             System.out.println("PUT: " + r.getBody());
 
             //DELETE
-            r = Velocity.delete("https://jsonplaceholder.typicode.com/posts/1")
+            r = velocity
+                    .delete("https://jsonplaceholder.typicode.com/posts/1")
                     .request();
 
             System.out.println("DELETE: " + r.getBody());
 
-        }catch (Exception e){
+        } catch (Throwable e) {
+            //noinspection CallToPrintStackTrace
             e.printStackTrace();
         }
+
+        System.out.println("total time: " + (System.currentTimeMillis() - t) + "ms");
     }
 }

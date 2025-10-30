@@ -7,13 +7,21 @@ import java.net.http.HttpHeaders;
  */
 public class Response {
 
-    boolean isSuccess = false;
-    int statusCode = 0;
-    String body = "";
-    HttpHeaders headers;
+    final boolean isSuccess;
+    final int statusCode;
+    final String body;
+    final HttpHeaders headers;
+
+    public Response(boolean isSuccess, int statusCode, String body, HttpHeaders headers) {
+        this.isSuccess = isSuccess;
+        this.statusCode = statusCode;
+        this.body = body;
+        this.headers = headers;
+    }
 
     /**
      * Checks if the request was successful.
+     *
      * @return true if the response code was 2xx
      */
     public boolean isSuccess() {
@@ -22,6 +30,7 @@ public class Response {
 
     /**
      * Get the http response code
+     *
      * @return http response code
      */
     public int getStatusCode() {
@@ -30,6 +39,7 @@ public class Response {
 
     /**
      * Get the http response body as string
+     *
      * @return http response body
      */
     public String getBody() {
@@ -38,6 +48,7 @@ public class Response {
 
     /**
      * Get the http response headers
+     *
      * @return Headers
      */
     public HttpHeaders getHeaders() {

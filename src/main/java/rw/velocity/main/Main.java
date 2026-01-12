@@ -6,8 +6,6 @@ import rw.velocity.api.Velocity;
 import rw.velocity.api.VelocityLogger;
 
 import java.io.IOException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 
 public class Main {
@@ -75,6 +73,28 @@ public class Main {
                     .request();
 
             System.out.println("DELETE: " + r.getBody());
+
+            //PATCH
+            r = velocity
+                    .call("PATCH", "https://jsonplaceholder.typicode.com/posts/1")
+                    .body("{\"body\":\"hello world\"}")
+                    .request();
+
+            System.out.println("PATCH: " + r.getBody());
+
+            //HEAD
+            r = velocity
+                    .call("HEAD", "https://jsonplaceholder.typicode.com/posts/1")
+                    .request();
+
+            System.out.println("HEAD: " + r.getBody());
+
+            //OPTIONS
+            r = velocity
+                    .call("OPTIONS", "https://jsonplaceholder.typicode.com/posts/1")
+                    .request();
+
+            System.out.println("OPTIONS: " + r.getBody());
 
         } catch (Throwable e) {
             //noinspection CallToPrintStackTrace

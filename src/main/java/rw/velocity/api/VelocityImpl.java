@@ -83,6 +83,22 @@ class VelocityImpl implements Velocity {
         return new RequestBuilderImpl(url, "PUT", callback);
     }
 
+    @Override
+    public RequestBuilder call(String method, String url) throws HttpException {
+        if(method.equalsIgnoreCase("GET") ||
+                method.equalsIgnoreCase("PUT") ||
+                method.equalsIgnoreCase("POST") ||
+                method.equalsIgnoreCase("DELETE") ||
+                method.equalsIgnoreCase("HEAD") ||
+                method.equalsIgnoreCase("PATCH") ||
+                method.equalsIgnoreCase("OPTIONS")
+        ) {
+            return new RequestBuilderImpl(url, method, callback);
+        }else{
+            throw new HttpException(0, "Invalid method");
+        }
+    }
+
     public static class BuilderImpl implements Velocity.Builder{
         private @Nullable String proxyUrl;
         private @Nullable Integer proxyPort;

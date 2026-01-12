@@ -11,4 +11,10 @@ public class HttpException extends Throwable{
         this.status = status;
         this.response = response;
     }
+
+    public HttpException(int status, String message) {
+        super(message);
+        this.status = status;
+        this.response = null;
+    }
 }

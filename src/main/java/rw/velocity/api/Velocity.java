@@ -35,6 +35,9 @@ public interface Velocity {
 
     RequestBuilder put(String url);
 
+    RequestBuilder call(String method, String url) throws HttpException;
+
+
     static Builder newBuilder() {
         return new VelocityImpl.BuilderImpl();
     }

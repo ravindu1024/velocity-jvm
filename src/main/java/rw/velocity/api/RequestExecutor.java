@@ -36,6 +36,7 @@ class RequestExecutor {
     private final File postBodyFile;
     private final String postFileParamName;
     private final int connectionTimeout;
+    private final String userAgent;
     private final ArrayList<byte[]> multiPartData = new ArrayList<>();
     private final @Nullable String contentType;
 
@@ -44,7 +45,7 @@ class RequestExecutor {
     private final HttpClient httpClient;
 
 
-    RequestExecutor(RequestBuilderImpl builder, HttpClient httpClient, @Nullable JsonDecodeFactory decodeFactory, @Nullable Logger logger) {
+    RequestExecutor(RequestBuilderImpl builder, HttpClient httpClient, @Nullable JsonDecodeFactory decodeFactory, @Nullable Logger logger, String userAgent) {
         this.requestUrl = builder.requestUrl;
         this.headers = builder.headers;
         this.queryParams = builder.queryParams;
@@ -61,6 +62,7 @@ class RequestExecutor {
         this.decodeFactory = decodeFactory;
         this.logger = logger;
         this.httpClient = httpClient;
+        this.userAgent = userAgent;
     }
 
     <T> T execute(Class<T> clz) throws IOException, InterruptedException, HttpException {
@@ -130,7 +132,8 @@ class RequestExecutor {
             requestBuilder.setHeader("Authorization", authHeader);
         }
 
-        requestBuilder.setHeader("User-Agent", "github.com/ravindu1024/velocity-jvm");
+        String ua = userAgent != null ? userAgent : "github.com/ravindu1024/velocity-jvm";
+        requestBuilder.setHeader("User-Agent", ua);
     }
 
     private void debugPrintRequest(HttpRequest request){

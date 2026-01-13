@@ -6,6 +6,8 @@ import rw.velocity.api.Velocity;
 import rw.velocity.api.VelocityLogger;
 
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 
 public class Main {
@@ -20,6 +22,8 @@ public class Main {
         Velocity velocity = Velocity.newBuilder()
                 .version(Velocity.HttpVersion.V2_PREFERRED)
                 .logger(new VelocityLogger())
+                .executor(Executors.newSingleThreadExecutor())
+                .userAgentOverride("test/test")
                 .decodeFactory(new GsonDecoderFactory())
                 .build();
 

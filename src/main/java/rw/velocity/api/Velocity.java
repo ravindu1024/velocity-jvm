@@ -22,19 +22,49 @@ public interface Velocity {
 
         Velocity.Builder version(HttpVersion version);
 
+        Velocity.Builder executor(Executor executor);
+
         Velocity.Builder logger(Logger logger);
+
+        Velocity.Builder userAgentOverride(String userAgent);
 
         Velocity build();
     }
 
+    /**
+     * Get method
+     * @param url url
+     * @return [RequestBuilder]
+     */
     RequestBuilder get(String url);
 
+    /**
+     * Post method
+     * @param url url
+     * @return [RequestBuilder]
+     */
     RequestBuilder post(String url);
 
+    /**
+     * Delete method
+     * @param url url
+     * @return [RequestBuilder]
+     */
     RequestBuilder delete(String url);
 
+    /**
+     * Put method
+     * @param url url
+     * @return [RequestBuilder]
+     */
     RequestBuilder put(String url);
 
+    /**
+     * Call http endpoint with given method type
+     * @param url url
+     * @param method Http method
+     * @return [RequestBuilder]
+     */
     RequestBuilder call(String method, String url) throws HttpException;
 
 

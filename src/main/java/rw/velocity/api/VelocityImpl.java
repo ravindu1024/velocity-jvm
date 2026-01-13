@@ -19,15 +19,17 @@ class VelocityImpl implements Velocity {
     private final @Nullable JsonDecodeFactory decodeFactory;
     private final @Nullable Logger logger;
     private final HttpClient httpClient;
+    private final String userAgent;
+    private final Executor executor;
     private final RequestHandlerCallback callback = new RequestHandlerCallback() {
         @Override
         public Response executeRequest(RequestBuilderImpl requestBuilder) throws IOException, InterruptedException {
-            return new RequestExecutor(requestBuilder, httpClient(), decodeFactory, logger).execute();
+            return new RequestExecutor(requestBuilder, httpClient(), decodeFactory, logger, userAgent).execute();
         }
 
         @Override
         public <T> T executeRequest(RequestBuilderImpl requestBuilder, Class<T> clz) throws HttpException, IOException, InterruptedException {
-            return new RequestExecutor(requestBuilder, httpClient(), decodeFactory, logger).execute(clz);
+            return new RequestExecutor(requestBuilder, httpClient(), decodeFactory, logger, userAgent).execute(clz);
         }
     };
 
@@ -40,6 +42,8 @@ class VelocityImpl implements Velocity {
         this.version = builder.version;
         this.logger = builder.logger;
         this.decodeFactory = builder.decodeFactory;
+        this.userAgent = builder.userAgent;
+        this.executor = builder.executor;
 
         //create httpclient
         httpClient = buildHttpClient();
@@ -48,6 +52,7 @@ class VelocityImpl implements Velocity {
     private HttpClient buildHttpClient(){
         var httpClientBuilder = HttpClient.newBuilder();
         httpClientBuilder.version(version.v);
+        httpClientBuilder.executor(executor);
         httpClientBuilder.followRedirects(redirectPolicy.r);
         if(proxyUrl != null && proxyPort != null){
             httpClientBuilder.proxy(ProxySelector.of(new InetSocketAddress(proxyUrl, proxyPort)));
@@ -108,6 +113,7 @@ class VelocityImpl implements Velocity {
         private @Nullable Logger logger = null;
         private @Nullable JsonDecodeFactory decodeFactory = null;
         private @Nullable Executor executor = null;
+        private @Nullable String userAgent = null;
 
 
         @Override
@@ -142,8 +148,20 @@ class VelocityImpl implements Velocity {
         }
 
         @Override
+        public Builder executor(Executor executor) {
+            this.executor = executor;
+            return this;
+        }
+
+        @Override
         public Velocity.Builder logger(Logger logger){
             this.logger = logger;
+            return this;
+        }
+
+        @Override
+        public Builder userAgentOverride(String userAgent) {
+            this.userAgent = userAgent;
             return this;
         }
 

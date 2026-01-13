@@ -52,7 +52,9 @@ class VelocityImpl implements Velocity {
     private HttpClient buildHttpClient(){
         var httpClientBuilder = HttpClient.newBuilder();
         httpClientBuilder.version(version.v);
-        httpClientBuilder.executor(executor);
+        if(executor != null) {
+            httpClientBuilder.executor(executor);
+        }
         httpClientBuilder.followRedirects(redirectPolicy.r);
         if(proxyUrl != null && proxyPort != null){
             httpClientBuilder.proxy(ProxySelector.of(new InetSocketAddress(proxyUrl, proxyPort)));
